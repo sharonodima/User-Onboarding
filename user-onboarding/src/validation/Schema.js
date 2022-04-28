@@ -16,7 +16,8 @@ const schema = yup.object().shape({
       .string()
       .required("Password is required!")
       .min(6, "Must Contain a minimum of 6 Characters")
-      .max(10, "Must Contain a maximum of 10 Characters")
+      .max(10, "Must Contain a maximum of 10 Characters"),
+    terms: yup.bool().oneOf([true], "You must agree to the terms of service!")
 })
 
 export default schema;

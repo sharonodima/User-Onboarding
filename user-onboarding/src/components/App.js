@@ -1,21 +1,23 @@
 import "../App.css"
 import React, { useState, useEffect } from 'react'
 import Form from '../components/Form'
-import User from '../components/User'
 import axios from "axios";
 import * as yup from "yup";
 import schema from '../validation/Schema'
 
 function App() {
-  const [users, setUsers] = useState({firstName:"", lastName:"",email:"", password:"", terms: false});
-  const [disabled, setDisabled] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [disabled, setDisabled] = useState(true);
+  const [formValues, setFormValues] = useState({firstName:"", lastName:"",email:"", password:"", terms: false});
   const [formErrors, setFormErrors] = useState({firstName:"", lastName:"",email:"", password:"", terms: false});
 
-  const postNewUser = newUser => {
-    axios.post("https://reqres.in/api/users", newUser)
+  const handleSubmit = () => {
+    axios.post("https://reqres.in/api/users", formValues)
       .then(res => {
-        setUsers([res.data, ...users]);
-      }).catch(err => console.error(err))
+        setUsers([res.data, ...users])
+      })
+      .catch(err => console.error(err))
+      .finally(() => setFormValues({firstName:"", lastName:"",email:"", password:"", terms: false}))
   }
 
   const validate = (name, value) => {
@@ -27,33 +29,36 @@ function App() {
 
   const inputChange = (name, value) => {
     validate(name, value);
-    setUsers({...users, [name]: value})
-  }
-
-  const formSubmit = () => {
-    const newUser = {
-      firstName: users.firstName.trim(),
-      lastName: users.lastName.trim(),
-      email: users.email.trim(),
-    }
-    postNewUser(newUser)
+    setFormValues({...formValues, [name]: value})
   }
 
   useEffect(() => {
-    schema.isValid(users).then(valid => setDisabled(!valid))
-  }, [users])
+    schema.isValid(formValues).then(valid => setDisabled(!valid))
+  }, [formValues])
+
 
   return (
-    <div className='container'>
+    <>
+    <div className='onboarding'>
       <header><h1>USER ONBOARDING</h1></header>
       <Form
-        values={users}
+        values={formValues}
         change={inputChange}
-        submit={formSubmit}
+        submit={handleSubmit}
         disabled={disabled}
         errors={formErrors}
       />
     </div>
+    <div className = "users">
+      {users.map((user, idx) =>{
+        return (
+          <div key = {idx}>
+            <p>User {idx + 1} is {user.firstName} {user.lastName}, {user.email}</p>
+          </div>
+        )
+      })}
+      </div>
+    </>
   )
 }
 
